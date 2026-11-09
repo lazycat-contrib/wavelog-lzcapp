@@ -1,0 +1,12 @@
+params:
+  - id: db_password
+    type: string
+    name: Database Password
+    description: "MariaDB password for the wavelog database user. Enter the SAME value in the installer database page."
+    default_value: "$random(len=16)"
+    optional: false
+locales:
+  zh:
+    db_password:
+      name: 数据库密码
+      description: wavelog 数据库用户的密码；安装向导的数据库页要填同一个值。

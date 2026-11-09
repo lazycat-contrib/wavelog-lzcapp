@@ -1,0 +1,38 @@
+version: 1
+project:
+  root: .
+  build_config: lzc-build.yml
+  package_file: package.yml
+  output: dist/application.lpk
+  target_arch: amd64
+update:
+  strategy: publish
+  allow_downgrade: false
+  version_source:
+    type: image
+    image: wavelog
+build:
+  toolchains: []
+  run_buildscript: false
+images:
+  - id: wavelog
+    target: service
+    service: wavelog
+    # ghcr images must use the full path here; a bare name silently falls back to Docker Hub.
+    source: ghcr.io/wavelog/wavelog
+    channel: stable
+    sort: semver
+    tag_regex: ^v?[0-9]+[.][0-9]+[.][0-9]+$
+    delivery:
+      mode: mirror
+      require_digest_match: true
+release:
+  use_github_release_notes: true
+  store_changelog_format: plain
+stores:
+  official:
+    enabled: false
+  private:
+    enabled: false
+    name: Wavelog
+    skip_if_version_exists: true

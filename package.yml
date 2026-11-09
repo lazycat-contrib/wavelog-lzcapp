@@ -1,0 +1,18 @@
+package: community.lazycat.app.wavelog
+name: Wavelog
+version: 2.1.1
+description: "Self-hosted amateur radio logbook: ADIF import/export, QSL tracking, DX cluster and statistics."
+min_os_version: "1.5.0"
+homepage: https://github.com/wavelog/wavelog
+author: wavelog
+license: MIT
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: Wavelog
+    description: "业余无线电日志簿：ADIF 导入导出、QSL 卡跟踪、DX 集群与统计。"
+  en:
+    name: Wavelog
+    description: "Self-hosted amateur radio logbook: ADIF import/export, QSL tracking, DX cluster and statistics."

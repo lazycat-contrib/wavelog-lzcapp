@@ -1,0 +1,63 @@
+application:
+  subdomain: wavelog
+  multi_instance: false
+  # The installer creates its own admin account with no e-mail verification,
+  # so the app is exposed directly instead of sitting behind the platform gate.
+  public_path:
+    - /
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      backend: http://wavelog:80/
+
+services:
+  db:
+    image: docker.1ms.run/library/mariadb:11.8.9
+    environment:
+      - MARIADB_ROOT_PASSWORD={{ stable_secret "wl_db_root" | replace "\r" "" | replace "\n" "" }}
+      - MARIADB_DATABASE=wavelog
+      - MARIADB_USER=wavelog
+      - |-
+        MARIADB_PASSWORD={{ .U.db_password }}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mariadb-admin ping -h 127.0.0.1 -u root -p"$$MARIADB_ROOT_PASSWORD"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    binds:
+      - /lzcapp/var/db:/var/lib/mysql
+
+  wavelog:
+    # upstream: ghcr.io/wavelog/wavelog:2.1.1
+    image: ghcr.1ms.run/wavelog/wavelog:2.1.1
+    depends_on:
+      - db
+    binds:
+      - /lzcapp/var/config:/var/www/html/application/config/docker
+      - /lzcapp/var/uploads:/var/www/html/uploads
+      - /lzcapp/var/userdata:/var/www/html/userdata
+
+usage: |
+  Wavelog 是自建的业余无线电日志簿：记录 QSO、ADIF 导入导出、QSL 卡跟踪、DX 集群与统计图。
+
+  使用方法：
+  1. 打开应用会进入安装向导（/install），按提示创建管理员账号（无需邮件验证）。
+  2. 数据库页按以下固定值填写：
+     - Database Host：db
+     - Database Name：wavelog
+     - Database User：wavelog
+     - Database Password：填部署参数里「数据库密码」显示的值（两处必须一致）。
+  3. 安装完成后用刚建的管理员账号登录，先到设置里导入 ADIF 或手工记录 QSO。
+
+  数据与安全：
+  - 日志数据保存在 MariaDB（/lzcapp/var/db），上传附件与头像在 /lzcapp/var/uploads 与 /lzcapp/var/userdata，卸载应用会一并删除，请定期备份。
+  - 应用自带账号体系，直接对外开放，由安装向导和登录页鉴权。
+  - 未配置邮件服务，依赖邮件的功能不可用。
+
+  说明：
+  - 本应用包含两个容器（应用本体 + MariaDB），启动顺序由依赖关系保证。
+  - 未做实机验证：安装向导、登录、QSO 记录与 ADIF 导入均未在设备上实测。
